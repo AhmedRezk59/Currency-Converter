@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Services\ConverterService;
-use Core\Database\Database;
 use Core\Url\Url;
 
 class ConversionController

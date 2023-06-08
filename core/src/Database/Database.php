@@ -106,6 +106,8 @@ class Database
     {
         $data = static::$connection->prepare(static::$query);
         $data->execute(static::$bindings);
+        static::$bindings = [];
+        static::$query = '';
         return $data->fetchAll();
     }
 }

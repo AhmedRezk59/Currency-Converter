@@ -18,9 +18,11 @@ class ConverterService
     public static function getToRate()
     {
         list($from_amount, $from_currency, $to_currency) = self::validate();
-        $rates = Database::query('SELECT mid from exchange_rates WHERE code IN (? , ?)', [$from_currency, $to_currency])->execute();
-        $from_rate = $rates[0]->mid;
-        $to_rate = $rates[1]->mid;
+        $rates = Database::query("SELECT `code` , `mid` FROM `exchange_rates` where code IN (? , ? )" , [
+            $from_currency , $to_currency
+        ])->execute();
+        $from_rate = array_shift(array_filter($rates, fn ($rate) => $rate->code === $from_currency))->mid;
+        $to_rate = array_shift(array_filter($rates, fn ($rate) => $rate->code === $to_currency))->mid;
         $to_amount = round((($from_amount * $from_rate) / $to_rate), 4);
         Session::set('msg', "$from_amount $from_currency is/are equal to $to_amount  $to_currency");
         return [$from_rate, $from_amount, $from_currency, $to_rate, $to_amount, $to_currency];
