@@ -9,10 +9,9 @@ use Core\Pagination\Pagination;
 
 class HomeService
 {
-    public static function getRates()
+    public static function getRates(int $limit = 8)
     {
         $page = filter_var(Request::get('page'), FILTER_SANITIZE_NUMBER_INT) ?: 1;
-        $limit = 8;
         $page = ((int) $page - 1) * $limit;
         $sql = "SELECT * FROM `exchange_rates` LIMIT $limit OFFSET $page";
         $result = Database::query($sql)->execute();

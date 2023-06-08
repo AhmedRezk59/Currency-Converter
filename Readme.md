@@ -6,6 +6,7 @@ This app is a currency converter that relies on [National Bank of Poland API](ht
 - You can know the rate of a specific currency compared to Poland's currency
 - You can know the latest conversions between cureencies
 - This app is protected against CSRF attacks and SQL injection
+- Unit testing to services
 
 ### Requirements
 - php 8.1 and higher
@@ -13,7 +14,7 @@ This app is a currency converter that relies on [National Bank of Poland API](ht
 ### Installation
 * Just clone this repository and run this command in the terminal
 ```bash
- composer du
+ composer install && composer du
  ```
 - Configure your MySQL database settings in `config/databse.php` file  
 

@@ -9,7 +9,7 @@ class HomeController
 {
     public function index()
     {
-        $rates = HomeService::getRates();
+        $rates = HomeService::getRates(8);
         return view('rates', ['result' => $rates]);
     }
 

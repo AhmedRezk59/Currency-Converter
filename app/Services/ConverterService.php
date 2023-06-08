@@ -10,7 +10,6 @@ use Core\Url\Url;
 
 class ConverterService
 {
-
     public static function getCurrencies()
     {
         return  Database::query('SELECT code , currency FROM `exchange_rates`')->execute();
