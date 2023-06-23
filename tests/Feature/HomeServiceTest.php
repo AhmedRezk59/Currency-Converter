@@ -9,7 +9,8 @@ class HomeServiceTest extends TestCase
 {
     public function test_get_rates_method()
     {
-        $rates = HomeService::getRates(8);
+        $homeService = new HomeService();
+        $rates = $homeService->getRates(8);
         $this->assertCount(8 , $rates);
     }
 }

@@ -7,22 +7,22 @@ use Core\Url\Url;
 
 class ConversionController
 {
-    public function index()
+    public function index(ConverterService $converterService)
     {
-        $currencies = ConverterService::getCurrencies();
+        $currencies = $converterService->getCurrencies();
         return view('rates-converter', ['currencies' => $currencies]);
     }
 
-    public function convert()
+    public function convert(ConverterService $converterService)
     {
-        $bindings = ConverterService::getToRate();
-        ConverterService::storeConvertedRate($bindings);
+        $bindings = $converterService->getToRate();
+        $converterService->storeConvertedRate($bindings);
         return Url::redirect('/rates-converter');
     }
 
-    public function getLatestConversions()
+    public function getLatestConversions(ConverterService $converterService)
     {
-        $latest_conversions = ConverterService::getLatestConversions(8);
+        $latest_conversions = $converterService->getLatestConversions(8);
         return view('latest-conversions', ['latest_conversions' => $latest_conversions]);
     }
 }

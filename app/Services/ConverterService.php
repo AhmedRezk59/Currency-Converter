@@ -10,14 +10,14 @@ use Core\Url\Url;
 
 class ConverterService
 {
-    public static function getCurrencies()
+    public function getCurrencies()
     {
         return  Database::query('SELECT code , currency FROM `exchange_rates`')->execute();
     }
 
-    public static function getToRate()
+    public function getToRate()
     {
-        list($from_amount, $from_currency, $to_currency) = self::validate();
+        list($from_amount, $from_currency, $to_currency) = $this->validate();
         $rates = Database::query("SELECT `code` , `mid` FROM `exchange_rates` where code IN (? , ? )" , [
             $from_currency , $to_currency
         ])->execute();
@@ -28,7 +28,7 @@ class ConverterService
         return [$from_rate, $from_amount, $from_currency, $to_rate, $to_amount, $to_currency];
     }
 
-    private static function validate()
+    private function validate()
     {
         $errors = [];
         $from_amount = filter_var(Request::post('from_amount'), FILTER_VALIDATE_FLOAT);
@@ -50,12 +50,12 @@ class ConverterService
         return [$from_amount, $from_currency, $to_currency];
     }
 
-    public static function storeConvertedRate(array $array)
+    public function storeConvertedRate(array $array)
     {
         Database::query('INSERT INTO `conversions` (`from_rate`  ,`from_amount`,`from_currency` , `to_rate` , `to_amount` , `to_currency`) VALUES (? , ? , ? , ? , ? , ?)', $array)->execute();
     }
 
-    public static function getLatestConversions(int $limit = 10)
+    public function getLatestConversions(int $limit = 10)
     {
         $page = filter_var(Request::get('page'), FILTER_SANITIZE_NUMBER_INT) ?: 1;
         $page = ((int) $page - 1) * $limit;

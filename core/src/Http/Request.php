@@ -39,10 +39,6 @@ class Request
      */
     private static string $script_name;
 
-    private function __construct()
-    {
-    }
-
     public static function handle(): void
     {
         static::$script_name = str_replace('\\', '', dirname(Server::get('SCRIPT_NAME')));

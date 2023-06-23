@@ -2,6 +2,7 @@
 
 namespace Core\Router;
 
+use App\Models\Model;
 use BadFunctionCallException;
 use BadMethodCallException;
 use Core\Exceptions\ClassNotFoundException;
@@ -10,6 +11,9 @@ use Core\Exceptions\InvalidMethodCallException;
 use Core\Exceptions\UnfoundRouteException;
 use Core\Http\Request;
 use Core\Interfaces\IMiddleware;
+use Reflection;
+use ReflectionFunction;
+use ReflectionMethod;
 
 class Route
 {
@@ -198,37 +202,39 @@ class Route
                 if ($matched == true) {
                     return static::invoke($route, $params);
                 }
-            } 
+            }
         }
         throw new UnfoundRouteException("This route doesn't exist");
     }
 
-   /**
-    * Invoke Route callback
-    *
-    * @param array $route
-    * @param array $params
-    * @return mixed
-    */
-    public static function invoke(array $route, array $params) :mixed
+    /**
+     * Invoke Route callback
+     *
+     * @param array $route
+     * @param array $params
+     * @return mixed
+     */
+    public static function invoke(array $route, array $params): mixed
     {
         static::executeMiddleware($route);
         $callback = $route['callback'];
         if (is_callable($callback)) {
+            static::resolveCallableParams($route, $params);
             return call_user_func_array($callback, $params);
-        } 
-        if( ! strpos($callback, '@') !== false) {
+        }
+        if (!strpos($callback, '@') !== false) {
             throw new \InvalidArgumentException('Please provide a valid callback function');
         }
         list($controller, $method) = explode('@', $callback);
         $controller = 'App\Controllers\\' . $controller;
-        if (! class_exists($controller)) {
+        if (!class_exists($controller)) {
             throw new ClassNotFoundException('This class doesn\'t exist');
         }
         $object = new $controller();
-        if (! method_exists($object, $method)) {
+        if (!method_exists($object, $method)) {
             throw new BadMethodCallException('This method ' . $method . ' Doesn\'t exist in ' . $controller);
         }
+        static::resolveCallableParams($route, $params);
         return call_user_func_array([$object, $method], $params);
     }
 
@@ -238,20 +244,52 @@ class Route
      * @param array $route
      * @return void
      */
-    private static function executeMiddleware (array $route) :void
+    private static function executeMiddleware(array $route): void
     {
-        foreach(explode('|', $route['middleware']) as $middleware) {
-            if($middleware !== ''){
+        foreach (explode('|', $route['middleware']) as $middleware) {
+            if ($middleware !== '') {
                 $middleware = 'App\Middlewares\\' . $middleware;
-                if(! class_exists($middleware)){
+                if (!class_exists($middleware)) {
                     throw new ClassNotFoundException('This middlware class ' . $middleware . ' doesn\'t exist');
                 }
                 $middleware = new $middleware();
-                if(! $middleware instanceof IMiddleware){
+                if (!$middleware instanceof IMiddleware) {
                     throw new InterfaceNotImplementedException('The interface "IMiddleware" must be implemented by the mddleware');
                 }
-                call_user_func([$middleware , 'handle']);
+                call_user_func([$middleware, 'handle']);
             }
         }
+    }
+
+    private static function resolveCallableParams($route, &$params)
+    {
+        $callback = $route['callback'];
+        if (is_callable($callback)) {
+            $rm = new ReflectionFunction($callback);
+        } else {
+            list($controller, $method) = explode('@', $callback);
+            $controller = 'App\Controllers\\' . $controller;
+            $obj = new $controller();
+            $rm = new ReflectionMethod($obj, $method);
+        }
+        $parameters = $rm->getParameters();
+        $ptr = 0;
+        $arr = [];
+        foreach ($parameters as $p) {
+            if ($p->hasType()) {
+                $type = $p->getType()->getName();
+                $obj = new $type();
+                if ($obj instanceof Model) {
+                    $arr[] = $obj->find($params[$ptr]);
+                    $ptr++;
+                } else {
+                    $arr[] = $obj;
+                }
+            } else {
+                $arr[] = $params[$ptr];
+                $ptr++;
+            }
+        }
+        $params = $arr;
     }
 }

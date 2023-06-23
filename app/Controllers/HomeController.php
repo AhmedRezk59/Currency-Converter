@@ -7,15 +7,15 @@ use Core\Url\Url;
 
 class HomeController
 {
-    public function index()
+    public function index(HomeService $homeService)
     {
-        $rates = HomeService::getRates(8);
+        $rates = $homeService->getRates(8);
         return view('rates', ['result' => $rates]);
     }
 
-    public function update()
+    public function update(HomeService $homeService)
     {
-        HomeService::updateRates();
+        $homeService->updateRates();
         return Url::redirect('/');
     }
 }
